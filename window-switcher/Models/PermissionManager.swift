@@ -31,6 +31,9 @@ final class PermissionManager {
 
     private init() {
         refreshAll()
+        if !hasCompletedOnboarding && allGranted {
+            hasCompletedOnboarding = true
+        }
     }
 
     // MARK: - Accessibility

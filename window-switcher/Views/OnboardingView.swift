@@ -137,11 +137,14 @@ struct OnboardingView: View {
     }
 
     private func relaunch() {
-        let url = Bundle.main.bundleURL
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-        task.arguments = ["-n", url.path]
-        try? task.run()
-        NSApp.terminate(nil)
+        task.arguments = ["-n", Bundle.main.bundleURL.path]
+        do {
+            try task.run()
+            NSApp.terminate(nil)
+        } catch {
+            // Don't terminate if relaunch failed — user keeps the running app
+        }
     }
 }
