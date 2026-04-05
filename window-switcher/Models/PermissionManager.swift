@@ -19,6 +19,10 @@ final class PermissionManager {
         accessibilityStatus == .granted && screenRecordingStatus == .granted
     }
 
+    var requiredPermissionsGranted: Bool {
+        accessibilityStatus == .granted
+    }
+
     var hasCompletedOnboarding: Bool {
         get { UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") }
         set { UserDefaults.standard.set(newValue, forKey: "hasCompletedOnboarding") }
@@ -30,7 +34,7 @@ final class PermissionManager {
 
     private init() {
         refreshAll()
-        if !hasCompletedOnboarding && allGranted {
+        if !hasCompletedOnboarding && requiredPermissionsGranted {
             hasCompletedOnboarding = true
         }
     }

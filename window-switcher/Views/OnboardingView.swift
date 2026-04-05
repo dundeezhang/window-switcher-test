@@ -126,12 +126,10 @@ struct OnboardingView: View {
 
     private var continueButton: some View {
         Button {
-            if permissionManager.allGranted {
-                permissionManager.completeOnboarding()
-            }
+            permissionManager.completeOnboarding()
             onDismiss()
         } label: {
-            Text(permissionManager.allGranted ? "Continue" : "Continue Without Full Access")
+            Text(permissionManager.requiredPermissionsGranted ? "Continue" : "Continue Without Full Access")
                 .frame(maxWidth: .infinity)
         }
         .controlSize(.large)

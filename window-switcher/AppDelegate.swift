@@ -68,11 +68,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func handleTrigger() {
         reloadConfigForOpen()
+        permissionManager.refreshAccessibility()
+        guard permissionManager.requiredPermissionsGranted else {
+            showOnboarding()
+            return
+        }
         showWindow()
     }
 
     func openSwitcherFromMenu() {
         reloadConfigForOpen()
+        permissionManager.refreshAccessibility()
+        guard permissionManager.requiredPermissionsGranted else {
+            showOnboarding()
+            return
+        }
         showWindow()
     }
 
@@ -164,9 +174,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func dismissOnboarding() {
-        let w = onboardingWindow
         onboardingWindow = nil
-        w?.close()
     }
 
     private func presentErrorAlert(title: String, message: String) {
