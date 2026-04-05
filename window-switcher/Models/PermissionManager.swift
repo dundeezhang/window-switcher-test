@@ -2,7 +2,7 @@ import AppKit
 import ScreenCaptureKit
 import Observation
 
-enum PermissionStatus {
+enum PermissionStatus: Equatable {
     case granted
     case denied
     case unknown
@@ -36,7 +36,10 @@ final class PermissionManager {
     // MARK: - Accessibility
 
     func refreshAccessibility() {
-        accessibilityStatus = AXIsProcessTrusted() ? .granted : .denied
+        let newStatus: PermissionStatus = AXIsProcessTrusted() ? .granted : .denied
+        if accessibilityStatus != newStatus {
+            accessibilityStatus = newStatus
+        }
     }
 
     func requestAccessibility() {
@@ -54,7 +57,10 @@ final class PermissionManager {
     // MARK: - Screen Recording
 
     func refreshScreenRecording() {
-        screenRecordingStatus = CGPreflightScreenCaptureAccess() ? .granted : .denied
+        let newStatus: PermissionStatus = CGPreflightScreenCaptureAccess() ? .granted : .denied
+        if screenRecordingStatus != newStatus {
+            screenRecordingStatus = newStatus
+        }
     }
 
     func requestScreenRecording() {

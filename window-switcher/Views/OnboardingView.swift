@@ -1,10 +1,13 @@
+import Combine
 import SwiftUI
 
 struct OnboardingView: View {
     let permissionManager: PermissionManager
     let onDismiss: () -> Void
 
-    let pollTimer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
+    @State private var screenRecordingWasGranted = false
+    private let pollTimer = Timer.publish(every: 1.0, on: .main, in: .common)
+    @State private var pollTimerConnection: (any Cancellable)?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -29,11 +32,17 @@ struct OnboardingView: View {
                 )
             }
 
-            if permissionManager.screenRecordingStatus == .granted {
-                Text("You may need to relaunch the app for Screen Recording to take effect.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 8)
+            if screenRecordingWasGranted {
+                VStack(spacing: 6) {
+                    Text("You may need to relaunch for Screen Recording to take effect.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Button("Relaunch") {
+                        relaunch()
+                    }
+                    .controlSize(.small)
+                }
+                .padding(.top, 8)
             }
 
             Spacer()
@@ -42,8 +51,19 @@ struct OnboardingView: View {
         }
         .padding(32)
         .frame(width: 480, height: 360)
+        .onAppear {
+            pollTimerConnection = pollTimer.connect()
+        }
+        .onDisappear {
+            pollTimerConnection?.cancel()
+            pollTimerConnection = nil
+        }
         .onReceive(pollTimer) { _ in
+            let wasDenied = permissionManager.screenRecordingStatus != .granted
             permissionManager.refreshAll()
+            if wasDenied && permissionManager.screenRecordingStatus == .granted {
+                screenRecordingWasGranted = true
+            }
         }
     }
 
@@ -114,5 +134,14 @@ struct OnboardingView: View {
         }
         .controlSize(.large)
         .keyboardShortcut(.defaultAction)
+    }
+
+    private func relaunch() {
+        let url = Bundle.main.bundleURL
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        task.arguments = ["-n", url.path]
+        try? task.run()
+        NSApp.terminate(nil)
     }
 }

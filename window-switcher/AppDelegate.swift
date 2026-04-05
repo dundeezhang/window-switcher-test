@@ -164,8 +164,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func dismissOnboarding() {
-        onboardingWindow?.close()
+        let w = onboardingWindow
         onboardingWindow = nil
+        w?.close()
     }
 
     private func presentErrorAlert(title: String, message: String) {
