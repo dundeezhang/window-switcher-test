@@ -1,5 +1,4 @@
 import AppKit
-import ScreenCaptureKit
 import Observation
 
 enum PermissionStatus: Equatable {
