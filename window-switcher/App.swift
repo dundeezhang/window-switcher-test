@@ -22,7 +22,6 @@ struct window_switcherApp: App {
     var body: some Scene {
         MenuBarExtra("Windows", systemImage: "macwindow") {
             let configStore = ConfigStore.shared
-            let _ = permissionManager.refreshAll()
             HStack(spacing: 10) {
                 Text("Window Switcher (v\(versionIdentifier))")
                 Button("Report an Issue...") {
@@ -87,6 +86,9 @@ struct window_switcherApp: App {
                 }.keyboardShortcut("q")
             }
             .frame(maxWidth: .infinity)
+            .onAppear {
+                permissionManager.refreshAll()
+            }
         }
     }
 }

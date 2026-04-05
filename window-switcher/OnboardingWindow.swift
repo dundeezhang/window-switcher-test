@@ -17,7 +17,7 @@ class OnboardingWindow: NSWindow, NSWindowDelegate {
 
         let onboardingView = OnboardingView(
             permissionManager: PermissionManager.shared,
-            onDismiss: onDismiss
+            onDismiss: { [weak self] in self?.close() }
         )
         contentView = NSHostingView(rootView: onboardingView)
 

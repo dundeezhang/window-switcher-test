@@ -126,7 +126,9 @@ struct OnboardingView: View {
 
     private var continueButton: some View {
         Button {
-            permissionManager.completeOnboarding()
+            if permissionManager.allGranted {
+                permissionManager.completeOnboarding()
+            }
             onDismiss()
         } label: {
             Text(permissionManager.allGranted ? "Continue" : "Continue Without Full Access")
