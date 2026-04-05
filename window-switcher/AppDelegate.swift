@@ -12,22 +12,37 @@ import HotKey
 class AppDelegate: NSObject, NSApplicationDelegate {
     var window : NSWindow?
     var hotKey : HotKey?
+    var onboardingWindow: OnboardingWindow?
     let launchAtLoginManager = LaunchAtLoginManager.shared
-    
+    let permissionManager = PermissionManager.shared
+
     // Long-lived clients to preserve caches across panels
     let windowClient = WindowClient()
     lazy var streamClient = WindowStreamClient(windowClient.getWindows())
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
-        
-        ensureAccessibilityPermission()
+
+        permissionManager.refreshAll()
         ConfigStore.shared.reload()
         launchAtLoginManager.refreshStatus()
         Task {
             await ApplicationIndex.shared.preload()
         }
         applyConfiguredHotKey()
+
+        if permissionManager.shouldShowOnboarding {
+            showOnboarding()
+        }
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        let previousAccessibility = permissionManager.accessibilityStatus
+        permissionManager.refreshAll()
+
+        if previousAccessibility != .granted && permissionManager.accessibilityStatus == .granted {
+            refreshWindows()
+        }
     }
     
     private func applyConfiguredHotKey() {
@@ -133,20 +148,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func ensureAccessibilityPermission() {
-        if !A11yClient.ensurePrompt() {
-            let alert = NSAlert()
-            alert.messageText = "Accessibility Permission Required"
-            alert.informativeText = "Window Switcher needs accessibility access to display open windows."
-            alert.alertStyle = .warning
-            alert.addButton(withTitle: "Open Settings")
-            alert.addButton(withTitle: "Quit")
-            let response = alert.runModal()
-            if response == .alertFirstButtonReturn {
-                A11yClient.openSystemSettings()
-            }
-            NSApp.terminate(nil)
+    func showOnboarding() {
+        guard onboardingWindow == nil else {
+            onboardingWindow?.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
         }
+
+        let window = OnboardingWindow(onDismiss: { [weak self] in
+            self?.dismissOnboarding()
+        })
+        onboardingWindow = window
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private func dismissOnboarding() {
+        onboardingWindow?.close()
+        onboardingWindow = nil
     }
 
     private func presentErrorAlert(title: String, message: String) {
